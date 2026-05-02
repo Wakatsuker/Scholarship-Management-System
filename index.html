@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PESO Digos - Scholarship Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#f0f2f5] font-sans text-slate-900">
+
+    <!-- Facebook-Style Image Modal -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <img id="modalImg">
+    </div>
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- SIDEBAR -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-30">
+            <div class="p-6 text-2xl font-bold border-b border-slate-800 text-center tracking-tight">
+                PESO <span class="text-yellow-500">DIGOS</span>
+            </div>
+            <nav class="flex-1 p-4 space-y-2">
+                <p class="text-xs text-slate-500 uppercase px-4 mb-2 font-semibold tracking-widest">Main Menu</p>
+                <button onclick="showTab('bulletin')" id="btn-bulletin" class="nav-btn active">
+                    <i class="fas fa-home w-6"></i> Home
+                </button>
+                <button onclick="showTab('announcements-page')" id="btn-announcements" class="nav-btn">
+                    <i class="fas fa-rss w-6"></i> Announcements
+                </button>
+                <button onclick="showTab('application-form')" id="btn-apply" class="nav-btn">
+                    <i class="fas fa-file-signature w-6"></i> Apply Now
+                </button>
+                
+                <div class="my-4 border-t border-slate-800"></div>
+                <p class="text-xs text-slate-500 uppercase px-4 mb-2 font-semibold tracking-widest">Administration</p>
+                <button onclick="showTab('admin-panel')" id="btn-admin" class="nav-btn">
+                    <i class="fas fa-user-shield w-6"></i> Admin Panel
+                </button>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 overflow-y-auto p-8">
+            
+            <!-- SECTION: HOME / BULLETIN -->
+            <div id="bulletin" class="tab-content">
+                <!-- INFINITE CAROUSEL -->
+                <div class="carousel-container shadow-xl mb-10">
+                    <div class="carousel-wrapper" id="carouselWrapper">
+                        <!-- Clone of Slide 3 -->
+                        <div class="carousel-slide">
+                            <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80">
+                            <div class="carousel-caption"><h2>Requirements Updated</h2><p>Check the 2026 criteria.</p></div>
+                        </div>
+                        <!-- Slide 1 -->
+                        <div class="carousel-slide">
+                            <img src="Hiyuki.png">
+                            <div class="carousel-caption"><h2 class="text-yellow-400">Welcome to PESO Digos</h2><p>Official Scholarship Portal</p></div>
+                        </div>
+                        <!-- Slide 2 -->
+                        <div class="carousel-slide">
+                            <img src="Fadia.png">
+                            <div class="carousel-caption"><h2>Mayor's Scholarship</h2><p>Applications are now open.</p></div>
+                        </div>
+                        <!-- Slide 3 -->
+                        <div class="carousel-slide">
+                            <img src="Mosa.png">
+                            <div class="carousel-caption"><h2>Requirements Updated</h2><p>Check the 2026 criteria.</p></div>
+                        </div>
+                        <!-- Clone of Slide 1 -->
+                        <div class="carousel-slide">
+                            <img src="Hiyuki.png">
+                            <div class="carousel-caption"><h2 class="text-yellow-400">Welcome to PESO Digos</h2><p>Official Scholarship Portal</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LATEST ANNOUNCEMENTS PREVIEW (HOME) -->
+                <div class="mb-10">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold flex items-center text-slate-800">
+                            <i class="fas fa-bullhorn mr-2 text-blue-600"></i> Latest Updates
+                        </h2>
+                        <button onclick="showTab('announcements-page')" class="text-blue-600 text-sm font-semibold hover:underline">See All Posts</button>
+                    </div>
+                    <div id="homeAnnouncements" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Top 2 posts loaded by JS -->
+                    </div>
+                </div>
+
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-graduation-cap mr-3 text-slate-700"></i> Open Scholarship Programs
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="scholarshipGrid"></div>
+            </div>
+
+            <!-- SECTION: ANNOUNCEMENTS (FULL FEED) -->
+            <div id="announcements-page" class="tab-content hidden">
+                <div class="max-w-2xl mx-auto">
+                    <h1 class="text-2xl font-bold mb-6 flex items-center">
+                        <i class="fas fa-newspaper text-blue-600 mr-3"></i> News Feed
+                    </h1>
+                    <div id="postsFeed" class="space-y-4 pb-10"></div>
+                </div>
+            </div>
+
+            <!-- SECTION: ADMIN PANEL -->
+            <div id="admin-panel" class="tab-content hidden">
+                <div class="max-w-4xl mx-auto space-y-8 pb-10">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                        <div class="flex items-center mb-4 space-x-3">
+                            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">A</div>
+                            <span class="font-bold">Create Announcement</span>
+                        </div>
+                        <textarea id="postContent" class="w-full bg-gray-50 border p-4 rounded-xl resize-none h-28 outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="What's the update?"></textarea>
+                        <div class="flex justify-between items-center mt-4 pt-4 border-t">
+                            <input type="file" id="imageInput" class="text-sm text-slate-500">
+                            <button onclick="createPost()" class="bg-blue-600 text-white px-8 py-2 rounded-full font-bold hover:bg-blue-700 transition shadow-md">Post</button>
+                        </div>
+                    </div>
+
+                    <!-- AI Ranking Table -->
+                    <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+                        <div class="p-4 bg-slate-900 text-white font-bold italic">AI Candidate Selection</div>
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="p-4 text-xs uppercase text-slate-500">Applicant</th>
+                                    <th class="p-4 text-xs uppercase text-slate-500">GPA</th>
+                                    <th class="p-4 text-xs uppercase text-slate-500">AI Score</th>
+                                    <th class="p-4 text-xs uppercase text-slate-500">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="aiTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: APPLICATION FORM (OFFICIAL RENEWAL LAYOUT) -->
+            <div id="application-form" class="tab-content hidden">
+                <div class="max-w-4xl mx-auto bg-white p-10 rounded-xl shadow-sm border">
+                    <div class="text-center mb-8">
+                        <img src="digos_logo.png" alt="Digos Logo" class="w-24 h-24 mx-auto mb-4">
+                        <h1 class="text-3xl font-bold text-slate-800">Scholarship Renewal Form</h1>
+                    </div>
+
+                    <form id="mainAppForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div><label class="form-label">Last Name</label><input type="text" name="lastName" class="form-input" required></div>
+                            <div><label class="form-label">First Name</label><input type="text" name="firstName" class="form-input" required></div>
+                            <div><label class="form-label">Middle Name</label><input type="text" name="middleName" class="form-input"></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label class="form-label">Purok / Street</label><input type="text" name="address" class="form-input" required></div>
+                            <div><label class="form-label">Barangay</label><input type="text" name="barangay" class="form-input" required></div>
+                        </div>
+
+                        <div><label class="form-label">School (Full Name)</label><input type="text" name="school" class="form-input" required></div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div><label class="form-label">Year Level</label><input type="text" name="yearLevel" class="form-input" required></div>
+                            <div><label class="form-label">Course</label><input type="text" name="course" class="form-input" required></div>
+                            <div><label class="form-label">Contact Number</label><input type="text" name="contact" class="form-input" required></div>
+                        </div>
+
+                        <div><label class="form-label">Email Address</label><input type="email" name="email" class="form-input" required></div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label class="form-label">Ethnicity</label><input type="text" name="ethnicity" class="form-input"></div>
+                            <div><label class="form-label">Youth Organization</label><input type="text" name="youthOrg" class="form-input"></div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-input">
+                                <option value="">-- Select Gender --</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Special Categories</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                                <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="PWD"> <span>PWD</span></label>
+                                <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="OFW"> <span>OFW Dependent</span></label>
+                                <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="Solo"> <span>Solo Parent</span></label>
+                                <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="4Ps"> <span>4Ps Beneficiary</span></label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Attach Grades Files and Enrollment Forms (PDF, JPG, PNG)</label>
+                            <input type="file" multiple class="form-input p-2 bg-gray-50 border-dashed border-2">
+                        </div>
+
+                        <div class="flex justify-center pt-6"><button type="submit" class="bg-blue-600 text-white px-12 py-3 rounded-lg font-bold shadow-lg hover:bg-blue-700 transition">Submit Application</button></div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

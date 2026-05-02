@@ -115,7 +115,7 @@ wrapper.addEventListener('transitionend', () => {
     }
 });
 
-setInterval(moveSlide, 5000);
+setInterval(moveSlide, 3000);
 
 
 // --- DATA LOADING ---

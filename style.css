@@ -294,29 +294,79 @@ body.sidebar-collapsed .header-inner {
     transform: scale(1.1);
 }
 
-/*DELETE DESIGN*/
-.delete-post-btn {
-    margin-left: auto;
+/* ===================== */
+/* POST 3-DOT MENU       */
+/* ===================== */
+.post-menu-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+.post-menu-btn {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
     color: #94a3b8;
-    font-size: 11px;
-    font-weight: 700;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
-    gap: 4px;
-    transition: 0.2s;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    padding: 0;
+}
+.post-menu-btn:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
+.post-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 150px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 24px rgba(15,23,42,0.12);
+    z-index: 200;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.post-menu-dropdown.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+.post-menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
     font-family: inherit;
-    flex-shrink: 0;
+    text-align: left;
+    transition: background 0.15s;
+    color: #334155;
 }
-.delete-post-btn:hover {
-    color: #ef4444;
-    background: #fee2e2;
-}
-body.dark-mode .delete-post-btn:hover { background: #450a0a !important; }
+.post-menu-item:hover { background: #f8fafc; }
+.post-menu-delete { color: #ef4444 !important; }
+.post-menu-delete:hover { background: #fef2f2 !important; }
+
+/* Dark mode */
+body.dark-mode .post-menu-btn:hover { background: #334155 !important; color: #e2e8f0 !important; }
+body.dark-mode .post-menu-dropdown { background: #1e293b !important; border-color: #334155 !important; }
+body.dark-mode .post-menu-item { color: #e2e8f0 !important; }
+body.dark-mode .post-menu-item:hover { background: #0f172a !important; }
+body.dark-mode .post-menu-delete { color: #f87171 !important; }
+body.dark-mode .post-menu-delete:hover { background: #450a0a !important; }
 
 /* ===================== */
 /* MODAL                 */

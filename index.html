@@ -7,11 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#f0f2f5] font-sans text-slate-900">
+<body class="bg-[#f0f2f5] text-slate-900">
 
-    <!-- Background Logo (centered on main content via JS) -->
+    <!-- Background Logo -->
     <div id="bgLogo"></div>
 
     <!-- Dark overlay for mobile sidebar -->
@@ -22,7 +25,124 @@
         <img id="modalImg">
     </div>
 
-    <!-- Floating reopen button (shown only when sidebar is collapsed) -->
+    <!-- ========================== -->
+    <!-- PROFILE MODAL              -->
+    <!-- ========================== -->
+    <div id="profileModal" class="profile-modal-overlay" onclick="closeProfileModal(event)">
+        <div class="profile-modal-panel">
+
+            <!-- Header Banner -->
+            <div class="profile-banner">
+                <div class="profile-banner-bg"></div>
+                <button class="profile-close-btn" onclick="closeProfileModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+                <!-- Avatar -->
+                <div class="profile-avatar-wrap">
+                    <div class="profile-avatar" id="profileAvatar">?</div>
+                    <span class="profile-avatar-badge">
+                        <i class="fas fa-clock"></i> Temporary
+                    </span>
+                </div>
+            </div>
+
+            <!-- Name + info -->
+            <div class="profile-body">
+                <div class="profile-name-row">
+                    <h2 class="profile-name" id="profileFullName">No Profile Yet</h2>
+                    <span class="profile-status-chip">
+                        <span class="status-dot"></span> Applicant
+                    </span>
+                </div>
+                <p class="profile-email" id="profileEmail">—</p>
+
+                <!-- Info grid -->
+                <div class="profile-info-grid">
+                    <div class="profile-info-card">
+                        <i class="fas fa-university text-blue-500"></i>
+                        <div>
+                            <p class="profile-info-label">School</p>
+                            <p class="profile-info-value" id="profileSchool">—</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-card">
+                        <i class="fas fa-book-open text-purple-500"></i>
+                        <div>
+                            <p class="profile-info-label">Course</p>
+                            <p class="profile-info-value" id="profileCourse">—</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-card">
+                        <i class="fas fa-layer-group text-green-500"></i>
+                        <div>
+                            <p class="profile-info-label">Year Level</p>
+                            <p class="profile-info-value" id="profileYear">—</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-card">
+                        <i class="fas fa-phone text-orange-500"></i>
+                        <div>
+                            <p class="profile-info-label">Contact</p>
+                            <p class="profile-info-value" id="profileContact">—</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-card">
+                        <i class="fas fa-map-marker-alt text-red-500"></i>
+                        <div>
+                            <p class="profile-info-label">Address</p>
+                            <p class="profile-info-value" id="profileAddress">—</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-card">
+                        <i class="fas fa-map-pin text-teal-500"></i>
+                        <div>
+                            <p class="profile-info-label">Barangay</p>
+                            <p class="profile-info-value" id="profileBarangay">—</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-card">
+                        <i class="fas fa-venus-mars text-pink-500"></i>
+                        <div>
+                            <p class="profile-info-label">Gender</p>
+                            <p class="profile-info-value" id="profileGender">—</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-card">
+                        <i class="fas fa-users text-yellow-500"></i>
+                        <div>
+                            <p class="profile-info-label">Ethnicity</p>
+                            <p class="profile-info-value" id="profileEthnicity">—</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special categories -->
+                <div class="profile-categories-wrap" id="profileCatsWrap">
+                    <p class="profile-info-label mb-2">Special Categories</p>
+                    <div class="profile-categories" id="profileCategories"></div>
+                </div>
+
+                <!-- Empty state -->
+                <div id="profileEmptyState" class="profile-empty">
+                    <i class="fas fa-user-circle text-4xl text-slate-300 mb-3"></i>
+                    <p class="text-slate-400 text-sm font-medium">No profile information yet.</p>
+                    <p class="text-slate-400 text-xs mt-1">Fill in the <strong>Apply Now</strong> form to populate your profile.</p>
+                    <button onclick="closeProfileModal(); showTab('application-form');"
+                        class="mt-4 px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition">
+                        Go to Application Form
+                    </button>
+                </div>
+
+                <!-- Footer note -->
+                <div class="profile-footer-note" id="profileFooterNote">
+                    <i class="fas fa-info-circle text-blue-400"></i>
+                    <span>This is a temporary profile. A full login system is coming soon.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating reopen button -->
     <button id="reopenToggle" onclick="toggleSidebar()" title="Open Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="3" y1="6" x2="21" y2="6"/>
@@ -35,9 +155,11 @@
 
         <!-- SIDEBAR -->
         <aside id="mainSidebar" class="bg-slate-900 text-white flex flex-col shadow-2xl sidebar-panel">
-            <!-- Header with toggle button -->
             <div class="flex items-center justify-between px-5 py-4 border-b border-slate-800 sidebar-inner">
-                <span class="text-2xl font-bold tracking-tight">PESO <span class="text-yellow-500">DIGOS</span></span>
+                <div class="flex items-center gap-3">
+                    <img src="images/digos_logo.png" alt="Logo" class="w-8 h-8 object-contain opacity-90">
+                    <span class="text-xl font-extrabold tracking-tight">PESO <span class="text-yellow-400">DIGOS</span></span>
+                </div>
                 <button id="sidebarToggle" onclick="toggleSidebar()" title="Close Menu">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="3" y1="6" x2="21" y2="6"/>
@@ -46,192 +168,286 @@
                     </svg>
                 </button>
             </div>
-            <nav class="flex-1 p-4 space-y-2 sidebar-inner overflow-y-auto">
-                <p class="text-xs text-slate-500 uppercase px-4 mb-2 font-semibold tracking-widest">Main Menu</p>
+            <nav class="flex-1 p-4 space-y-1 sidebar-inner overflow-y-auto">
+                <p class="text-[10px] text-slate-500 uppercase px-3 mb-2 mt-1 font-bold tracking-widest">Main Menu</p>
                 <button onclick="showTab('bulletin')" id="btn-bulletin" class="nav-btn active">
-                    <i class="fas fa-home w-6 mr-2"></i> Home
+                    <i class="fas fa-home w-5 mr-3 text-sm"></i> Home
                 </button>
                 <button onclick="showTab('announcements-page')" id="btn-announcements" class="nav-btn">
-                    <i class="fas fa-rss w-6 mr-2"></i> Announcements
+                    <i class="fas fa-rss w-5 mr-3 text-sm"></i> Announcements
                 </button>
                 <button onclick="showTab('application-form')" id="btn-apply" class="nav-btn">
-                    <i class="fas fa-file-signature w-6 mr-2"></i> Apply Now
+                    <i class="fas fa-file-signature w-5 mr-3 text-sm"></i> Apply Now
                 </button>
-
-                <div class="my-4 border-t border-slate-800"></div>
-                <p class="text-xs text-slate-500 uppercase px-4 mb-2 font-semibold tracking-widest">Administration</p>
+                <div class="my-3 border-t border-slate-800"></div>
+                <p class="text-[10px] text-slate-500 uppercase px-3 mb-2 font-bold tracking-widest">Administration</p>
                 <button onclick="showTab('admin-panel')" id="btn-admin" class="nav-btn">
-                    <i class="fas fa-user-shield w-6 mr-2"></i> Admin Panel
+                    <i class="fas fa-user-shield w-5 mr-3 text-sm"></i> Admin Panel
                 </button>
             </nav>
+            <div class="sidebar-inner border-t border-slate-800 px-5 py-4">
+                <p class="text-[10px] text-slate-600 leading-relaxed">© 2026 PESO City of Digos<br>Scholarship Management Portal</p>
+            </div>
         </aside>
 
-        <!-- MAIN CONTENT -->
-        <main id="mainContent" class="flex-1 overflow-y-auto main-content">
+        <!-- RIGHT SIDE: Header + Main -->
+        <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
 
-            <!-- SECTION: HOME / BULLETIN -->
-            <div id="bulletin" class="tab-content">
-                <!-- INFINITE CAROUSEL -->
-                <div class="carousel-container shadow-xl mb-6 md:mb-10">
-                    <div class="carousel-wrapper" id="carouselWrapper">
-                        <!-- Clone of last slide -->
-                        <div class="carousel-slide">
-                            <img src="images/Mosa.png">
-                            <div class="carousel-caption"><h2>Requirements Updated</h2><p>Check the 2026 criteria.</p></div>
-                        </div>
-                        <!-- Slide 1 -->
-                        <div class="carousel-slide">
-                            <img src="images/Hiyuki.png">
-                            <div class="carousel-caption"><h2 class="text-yellow-400">Welcome to PESO Digos</h2><p>Official Scholarship Portal</p></div>
-                        </div>
-                        <!-- Slide 2 -->
-                        <div class="carousel-slide">
-                            <img src="images/Fadia.png">
-                            <div class="carousel-caption"><h2>Mayor's Scholarship</h2><p>Applications are now open.</p></div>
-                        </div>
-                        <!-- Slide 3 -->
-                        <div class="carousel-slide">
-                            <img src="images/Mosa.png">
-                            <div class="carousel-caption"><h2>Requirements Updated</h2><p>Check the 2026 criteria.</p></div>
-                        </div>
-                        <!-- Clone of first slide -->
-                        <div class="carousel-slide" id="firstClone">
-                            <img src="images/Hiyuki.png">
-                            <div class="carousel-caption"><h2 class="text-yellow-400">Welcome to PESO Digos</h2><p>Official Scholarship Portal</p></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- LATEST ANNOUNCEMENTS PREVIEW -->
-                <div class="mb-6 md:mb-10">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg md:text-xl font-bold flex items-center text-slate-800">
-                            <i class="fas fa-bullhorn mr-2 text-blue-600"></i> Latest Updates
-                        </h2>
-                        <button onclick="showTab('announcements-page')" class="text-blue-600 text-sm font-semibold hover:underline">See All</button>
-                    </div>
-                    <div id="homeAnnouncements" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                </div>
-
-                <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 flex items-center">
-                    <i class="fas fa-graduation-cap mr-3 text-slate-700"></i> Open Scholarship Programs
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" id="scholarshipGrid"></div>
-            </div>
-
-            <!-- SECTION: ANNOUNCEMENTS (FULL FEED) -->
-            <div id="announcements-page" class="tab-content hidden">
-                <div class="max-w-2xl mx-auto">
-                    <h1 class="text-xl md:text-2xl font-bold mb-6 flex items-center">
-                        <i class="fas fa-newspaper text-blue-600 mr-3"></i> News Feed
-                    </h1>
-                    <div id="postsFeed" class="space-y-4 pb-10"></div>
-                </div>
-            </div>
-
-            <!-- SECTION: ADMIN PANEL -->
-            <div id="admin-panel" class="tab-content hidden">
-                <div class="max-w-4xl mx-auto space-y-6 pb-10">
-                    <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border">
-                        <div class="flex items-center mb-4 space-x-3">
-                            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">A</div>
-                            <span class="font-bold">Create Announcement</span>
-                        </div>
-                        <textarea id="postContent" class="w-full bg-gray-50 border p-4 rounded-xl resize-none h-28 outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="What's the update?"></textarea>
-                        <!-- Stacks vertically on mobile, row on desktop -->
-                        <div class="admin-post-row">
-                            <input type="file" id="imageInput" class="text-sm text-slate-500 w-full sm:w-auto">
-                            <button onclick="createPost()" class="bg-blue-600 text-white px-8 py-2 rounded-full font-bold hover:bg-blue-700 transition shadow-md w-full sm:w-auto">Post</button>
+            <!-- STICKY HEADER -->
+            <header class="site-header">
+                <div class="header-inner">
+                    <!-- Left -->
+                    <div class="header-left">
+                        <div class="header-page-info">
+                            <span id="headerPageTitle" class="header-title">Home</span>
+                            <span id="headerPageSub" class="header-sub">Welcome to the PESO Digos Scholarship Portal</span>
                         </div>
                     </div>
 
-                    <!-- AI Ranking Table — horizontally scrollable on mobile -->
-                    <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
-                        <div class="p-4 bg-slate-900 text-white font-bold italic">AI Candidate Selection</div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left min-w-[400px]">
-                                <thead class="bg-slate-50 border-b">
-                                    <tr>
-                                        <th class="p-4 text-xs uppercase text-slate-500">Applicant</th>
-                                        <th class="p-4 text-xs uppercase text-slate-500">GPA</th>
-                                        <th class="p-4 text-xs uppercase text-slate-500">AI Score</th>
-                                        <th class="p-4 text-xs uppercase text-slate-500">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="aiTableBody"></tbody>
-                            </table>
+                    <!-- Right -->
+                    <div class="header-right">
+                        <div class="header-date-badge">
+                            <i class="fas fa-calendar-alt text-blue-500 text-xs"></i>
+                            <span id="headerDate" class="header-date-text"></span>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION: APPLICATION FORM -->
-            <div id="application-form" class="tab-content hidden">
-                <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border form-wrapper">
-                    <div class="text-center mb-6 md:mb-8">
-                        <img src="images/digos_logo.png" alt="Digos Logo" class="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3">
-                        <h1 class="text-xl md:text-3xl font-bold text-slate-800">Scholarship Renewal Form</h1>
-                    </div>
-
-                    <form id="mainAppForm" class="space-y-5">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div><label class="form-label">Last Name</label><input type="text" name="lastName" class="form-input" required></div>
-                            <div><label class="form-label">First Name</label><input type="text" name="firstName" class="form-input" required></div>
-                            <div><label class="form-label">Middle Name</label><input type="text" name="middleName" class="form-input"></div>
+                        <div class="header-status-badge">
+                            <span class="status-dot"></span>
+                            <span>Applications Open</span>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="form-label">Purok / Street</label><input type="text" name="address" class="form-input" required></div>
-                            <div><label class="form-label">Barangay</label><input type="text" name="barangay" class="form-input" required></div>
-                        </div>
-
-                        <div><label class="form-label">School (Full Name)</label><input type="text" name="school" class="form-input" required></div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div><label class="form-label">Year Level</label><input type="text" name="yearLevel" class="form-input" required></div>
-                            <div><label class="form-label">Course</label><input type="text" name="course" class="form-input" required></div>
-                            <div><label class="form-label">Contact Number</label><input type="text" name="contact" class="form-input" required></div>
-                        </div>
-
-                        <div><label class="form-label">Email Address</label><input type="email" name="email" class="form-input" required></div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="form-label">Ethnicity</label><input type="text" name="ethnicity" class="form-input"></div>
-                            <div><label class="form-label">Youth Organization</label><input type="text" name="youthOrg" class="form-input"></div>
-                        </div>
-
-                        <div>
-                            <label class="form-label">Gender</label>
-                            <select name="gender" class="form-input">
-                                <option value="">-- Select Gender --</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="form-label">Special Categories</label>
-                            <div class="grid grid-cols-2 gap-3 mt-2">
-                                <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="PWD"> <span>PWD</span></label>
-                                <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="OFW"> <span>OFW Dependent</span></label>
-                                <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="Solo"> <span>Solo Parent</span></label>
-                                <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="4Ps"> <span>4Ps Beneficiary</span></label>
+                        <!-- Preferences dropdown -->
+                        <div style="position:relative;">
+                            <button class="pref-btn" id="prefBtn" onclick="togglePrefDropdown()" title="Preferences">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                </svg>
+                                <span>Preferences</span>
+                                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <div class="pref-dropdown" id="prefDropdown">
+                                <div class="pref-dropdown-header">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                                    <span>Preferences</span>
+                                </div>
+                                <div class="pref-section">
+                                    <p class="pref-section-label">Theme</p>
+                                    <div class="theme-options">
+                                        <button class="theme-option active" id="themeLight" onclick="setTheme('light')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                                            Light
+                                        </button>
+                                        <button class="theme-option" id="themeDark" onclick="setTheme('dark')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                                            Dark
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="pref-section">
+                                    <p class="pref-section-label">Font Size</p>
+                                    <div class="font-stepper">
+                                        <button class="font-stepper-btn" onclick="changeFontSize(-1)">−</button>
+                                        <span class="font-stepper-label" id="fontSizeLabel">Medium</span>
+                                        <button class="font-stepper-btn" onclick="changeFontSize(1)">+</button>
+                                    </div>
+                                </div>
+                                <div class="pref-section">
+                                    <p class="pref-section-label">Language</p>
+                                    <div class="lang-options">
+                                        <button class="lang-option active" id="langEN" onclick="setLanguage('en')">🇵🇭 English</button>
+                                        <button class="lang-option" id="langFIL" onclick="setLanguage('fil')">🇵🇭 Filipino</button>
+                                    </div>
+                                </div>
+                                <div class="pref-section" style="padding-top:0.4rem;padding-bottom:0.4rem;">
+                                    <button class="pref-reset-btn" onclick="resetPreferences()">↩ Reset to defaults</button>
+                                </div>
                             </div>
                         </div>
 
-                        <div>
-                            <label class="form-label">Attach Grades &amp; Enrollment Forms (PDF, JPG, PNG)</label>
-                            <input type="file" multiple class="form-input p-2 bg-gray-50 border-dashed border-2">
-                        </div>
-
-                        <div class="flex justify-center pt-4">
-                            <button type="submit" class="bg-blue-600 text-white px-10 py-3 rounded-lg font-bold shadow-lg hover:bg-blue-700 transition w-full md:w-auto">Submit Application</button>
-                        </div>
-                    </form>
+                        <!-- PROFILE BUTTON -->
+                        <button class="profile-header-btn" id="profileHeaderBtn" onclick="openProfileModal()" title="View Profile">
+                            <div class="profile-header-avatar" id="profileHeaderAvatar">
+                                <i class="fas fa-user text-xs"></i>
+                            </div>
+                            <div class="profile-header-info">
+                                <span class="profile-header-name" id="profileHeaderName">Guest User</span>
+                                <span class="profile-header-sub">View Profile</span>
+                            </div>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;stroke:#94a3b8;flex-shrink:0;">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-            </div>
+                <div class="header-accent-bar"></div>
+            </header>
 
-        </main>
+            <!-- MAIN CONTENT -->
+            <main id="mainContent" class="flex-1 overflow-y-auto main-content">
+
+                <!-- SECTION: HOME / BULLETIN -->
+                <div id="bulletin" class="tab-content">
+                    <div class="carousel-container shadow-xl mb-6 md:mb-10">
+                        <div class="carousel-wrapper" id="carouselWrapper">
+                            <div class="carousel-slide">
+                                <img src="images/Mosa.png" loading="lazy">
+                                <div class="carousel-caption"><h2>Requirements Updated</h2><p>Check the 2026 criteria.</p></div>
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="images/Hiyuki.png" loading="lazy">
+                                <div class="carousel-caption"><h2 class="text-yellow-400">Welcome to PESO Digos</h2><p>Official Scholarship Portal</p></div>
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="images/Fadia.png" loading="lazy">
+                                <div class="carousel-caption"><h2>Mayor's Scholarship</h2><p>Applications are now open.</p></div>
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="images/Mosa.png" loading="lazy">
+                                <div class="carousel-caption"><h2>Requirements Updated</h2><p>Check the 2026 criteria.</p></div>
+                            </div>
+                            <div class="carousel-slide" id="firstClone">
+                                <img src="images/Hiyuki.png" loading="lazy">
+                                <div class="carousel-caption"><h2 class="text-yellow-400">Welcome to PESO Digos</h2><p>Official Scholarship Portal</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-6 md:mb-10">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg md:text-xl font-bold flex items-center text-slate-800">
+                                <i class="fas fa-bullhorn mr-2 text-blue-600"></i> Latest Updates
+                            </h2>
+                            <button onclick="showTab('announcements-page')" class="text-blue-600 text-sm font-semibold hover:underline">See All</button>
+                        </div>
+                        <div id="homeAnnouncements" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+                    <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 flex items-center">
+                        <i class="fas fa-graduation-cap mr-3 text-slate-700"></i> Open Scholarship Programs
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" id="scholarshipGrid"></div>
+                </div>
+
+                <!-- SECTION: ANNOUNCEMENTS -->
+                <div id="announcements-page" class="tab-content hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <h1 class="text-xl md:text-2xl font-bold mb-6 flex items-center">
+                            <i class="fas fa-newspaper text-blue-600 mr-3"></i> News Feed
+                        </h1>
+                        <div id="postsFeed" class="space-y-4 pb-10"></div>
+                    </div>
+                </div>
+
+                <!-- SECTION: ADMIN PANEL -->
+                <div id="admin-panel" class="tab-content hidden">
+                    <div class="max-w-4xl mx-auto space-y-6 pb-10">
+                        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border">
+                            <div class="flex items-center mb-4 space-x-3">
+                                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">A</div>
+                                <span class="font-bold">Create Announcement</span>
+                            </div>
+                            <textarea id="postContent" class="w-full bg-gray-50 border p-4 rounded-xl resize-none h-28 outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="What's the update?"></textarea>
+                            <!-- Media preview strip -->
+                            <div id="mediaPreview" class="media-preview-strip" style="display:none;"></div>
+
+                            <div class="admin-post-row">
+                                <label class="media-upload-label">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <polyline points="21 15 16 10 5 21"/>
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;">
+                                        <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                                    </svg>
+                                    <span>Photo / Video</span>
+                                    <input type="file" id="mediaInput" multiple
+                                           accept="image/*,video/mp4,video/webm,video/mov,video/ogg"
+                                           style="display:none;"
+                                           onchange="updateMediaPreview()">
+                                </label>
+                                <button onclick="createPost()" class="bg-blue-600 text-white px-8 py-2 rounded-full font-bold hover:bg-blue-700 transition shadow-md w-full sm:w-auto">Post</button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+                            <div class="p-4 bg-slate-900 text-white font-bold italic">AI Candidate Selection</div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left min-w-[400px]">
+                                    <thead class="bg-slate-50 border-b">
+                                        <tr>
+                                            <th class="p-4 text-xs uppercase text-slate-500">Applicant</th>
+                                            <th class="p-4 text-xs uppercase text-slate-500">GPA</th>
+                                            <th class="p-4 text-xs uppercase text-slate-500">AI Score</th>
+                                            <th class="p-4 text-xs uppercase text-slate-500">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="aiTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: APPLICATION FORM -->
+                <div id="application-form" class="tab-content hidden">
+                    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border form-wrapper">
+                        <div class="text-center mb-6 md:mb-8">
+                            <img src="images/digos_logo.png" alt="Digos Logo" class="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3">
+                            <h1 class="text-xl md:text-3xl font-bold text-slate-800">Scholarship Renewal Form</h1>
+                            <p class="text-xs text-blue-600 font-semibold mt-1 flex items-center justify-center gap-1">
+                                <i class="fas fa-info-circle"></i> Submitting this form will save your information to your temporary profile.
+                            </p>
+                        </div>
+                        <form id="mainAppForm" class="space-y-5">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="form-label">Last Name</label><input type="text" name="lastName" class="form-input" required></div>
+                                <div><label class="form-label">First Name</label><input type="text" name="firstName" class="form-input" required></div>
+                                <div><label class="form-label">Middle Name</label><input type="text" name="middleName" class="form-input"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="form-label">Purok / Street</label><input type="text" name="address" class="form-input" required></div>
+                                <div><label class="form-label">Barangay</label><input type="text" name="barangay" class="form-input" required></div>
+                            </div>
+                            <div><label class="form-label">School (Full Name)</label><input type="text" name="school" class="form-input" required></div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="form-label">Year Level</label><input type="text" name="yearLevel" class="form-input" required></div>
+                                <div><label class="form-label">Course</label><input type="text" name="course" class="form-input" required></div>
+                                <div><label class="form-label">Contact Number</label><input type="text" name="contact" class="form-input" required></div>
+                            </div>
+                            <div><label class="form-label">Email Address</label><input type="email" name="email" class="form-input" required></div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="form-label">Ethnicity</label><input type="text" name="ethnicity" class="form-input"></div>
+                                <div><label class="form-label">Youth Organization</label><input type="text" name="youthOrg" class="form-input"></div>
+                            </div>
+                            <div>
+                                <label class="form-label">Gender</label>
+                                <select name="gender" class="form-input">
+                                    <option value="">-- Select Gender --</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Special Categories</label>
+                                <div class="grid grid-cols-2 gap-3 mt-2">
+                                    <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="PWD"> <span>PWD</span></label>
+                                    <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="OFW"> <span>OFW Dependent</span></label>
+                                    <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="Solo"> <span>Solo Parent</span></label>
+                                    <label class="flex items-center space-x-2 text-sm text-slate-600"><input type="checkbox" name="category" value="4Ps"> <span>4Ps Beneficiary</span></label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label">Attach Grades &amp; Enrollment Forms (PDF, JPG, PNG)</label>
+                                <input type="file" multiple class="form-input p-2 bg-gray-50 border-dashed border-2">
+                            </div>
+                            <div class="flex justify-center pt-4">
+                                <button type="submit" class="bg-blue-600 text-white px-10 py-3 rounded-lg font-bold shadow-lg hover:bg-blue-700 transition w-full md:w-auto">Submit Application</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </main>
+        </div>
     </div>
 
     <script src="script.js"></script>

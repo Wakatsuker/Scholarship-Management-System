@@ -281,11 +281,32 @@ async function loadPosts() {
         feed.innerHTML += `
             
             <div class="fb-post">
-                <div class="flex items-center mb-3">
+                <div class="flex items-center mb-3" style="position:relative;">
                     <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3 flex-shrink-0">P</div>
                     <div>
                         <div class="font-bold text-sm">PESO Digos Official</div>
                         <div class="text-[11px] text-gray-500">Just now</div>
+                    </div>
+                    <!-- 3-dot menu -->
+                    <div class="post-menu-wrap" style="margin-left:auto;">
+                        <button class="post-menu-btn" onclick="togglePostMenu('menu_${post.id}', event)" title="More options">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                                <circle cx="12" cy="5" r="1.5"/>
+                                <circle cx="12" cy="12" r="1.5"/>
+                                <circle cx="12" cy="19" r="1.5"/>
+                            </svg>
+                        </button>
+                        <div class="post-menu-dropdown" id="menu_${post.id}">
+                            <button class="post-menu-item post-menu-delete" onclick="deletePost('${post.id}', 'menu_${post.id}')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6l-1 14H6L5 6"/>
+                                    <path d="M10 11v6M14 11v6"/>
+                                    <path d="M9 6V4h6v2"/>
+                                </svg>
+                                Delete Post
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <p class="text-[15px] mb-3 text-slate-800">${post.content}</p>
@@ -298,6 +319,38 @@ async function loadPosts() {
             });
         }, 100);
     });
+}
+
+/*DeletePost and TogglePostMenu*/
+
+function togglePostMenu(menuId, e) {
+    e.stopPropagation();
+    // Close all other open menus first
+    document.querySelectorAll('.post-menu-dropdown.open').forEach(m => {
+        if (m.id !== menuId) m.classList.remove('open');
+    });
+    document.getElementById(menuId)?.classList.toggle('open');
+}
+
+// Close any open menu when clicking anywhere else
+document.addEventListener('click', () => {
+    document.querySelectorAll('.post-menu-dropdown.open')
+        .forEach(m => m.classList.remove('open'));
+});
+
+async function deletePost(postId, menuId) {
+    // Close the menu first
+    document.getElementById(menuId)?.classList.remove('open');
+
+    if (!confirm("Delete this post? This cannot be undone.")) return;
+
+    const { error } = await client.from("posts").delete().eq("id", postId);
+    if (error) {
+        alert("Delete failed: " + error.message);
+    } else {
+        loadPosts();
+        loadHomeAnnouncements();
+    }
 }
 
 // ================================

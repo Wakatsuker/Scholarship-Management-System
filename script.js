@@ -95,51 +95,332 @@ function showTab(tabId) {
     if (tabId === 'admin-panel') loadAI();
 }
 
-// --- INFINITE CAROUSEL ---
+// ================================================================
+// BULLETIN SLIDES — Dynamic Carousel from Supabase
+// ================================================================
+
+let carouselSlides   = [];
+let carouselCounter  = 1;
+let carouselInterval = null;
+let isTransitioning  = false;
+
 const wrapper = document.getElementById('carouselWrapper');
-const slides  = document.querySelectorAll('.carousel-slide');
-let counter   = 1;
-const size    = 100;
 
-wrapper.style.transform = `translateX(${-size * counter}%)`;
+// Build carousel DOM from slides array
+function buildCarousel(slides) {
+    if (!wrapper) return;
+    carouselSlides = slides;
 
-function moveSlide() {
-    if (counter >= slides.length - 1) return;
-    wrapper.classList.add('smooth-transition');
-    counter++;
-    wrapper.style.transform = `translateX(${-size * counter}%)`;
+    if (slides.length === 0) {
+        wrapper.innerHTML = `<div class="carousel-slide" style="display:flex;align-items:center;justify-content:center;background:#1e293b;">
+            <p style="color:#94a3b8;font-size:0.9rem;">No slides yet. Add some via Edit Slides.</p>
+        </div>`;
+        buildDots(0);
+        return;
+    }
+
+    // [clone of last] + [real slides] + [clone of first]
+    const all = [slides[slides.length - 1], ...slides, slides[0]];
+
+    wrapper.innerHTML = all.map(s => `
+        <div class="carousel-slide">
+            <img src="${s.image_url}" loading="lazy" onerror="this.src='images/digos_logo.png'">
+            <div class="carousel-caption">
+                <h2>${s.title || ''}</h2>
+                <p>${s.subtitle || ''}</p>
+            </div>
+        </div>
+    `).join('');
+
+    carouselCounter = 1;
+    wrapper.style.transition = 'none';
+    wrapper.style.transform = `translateX(-${carouselCounter * 100}%)`;
+
+    buildDots(slides.length);
+    updateDots();
+    startCarousel();
 }
 
-wrapper.addEventListener('transitionend', () => {
-    if (slides[counter].id === 'lastClone' || counter === 0) {
-        wrapper.classList.remove('smooth-transition');
-        counter = slides.length - 2;
-        wrapper.style.transform = `translateX(${-size * counter}%)`;
+function buildDots(count) {
+    const dotsEl = document.getElementById('carouselDots');
+    if (!dotsEl) return;
+    dotsEl.innerHTML = Array.from({ length: count }, (_, i) =>
+        `<span class="carousel-dot" onclick="goToSlide(${i + 1})"></span>`
+    ).join('');
+}
+
+function updateDots() {
+    const dots = document.querySelectorAll('.carousel-dot');
+    const realIndex = ((carouselCounter - 1 + carouselSlides.length) % carouselSlides.length);
+    dots.forEach((d, i) => d.classList.toggle('active', i === realIndex));
+}
+
+function goToSlide(realIndex) {
+    if (isTransitioning) return;
+    isTransitioning = true;
+    carouselCounter = realIndex;
+    wrapper.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    wrapper.style.transform = `translateX(-${carouselCounter * 100}%)`;
+    updateDots();
+    resetCarouselTimer();
+}
+
+function moveSlide() {
+    if (isTransitioning) return;
+    isTransitioning = true;
+    carouselCounter++;
+    wrapper.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    wrapper.style.transform = `translateX(-${carouselCounter * 100}%)`;
+    updateDots();
+}
+
+function startCarousel() {
+    if (carouselInterval) clearInterval(carouselInterval);
+    if (carouselSlides.length > 1) {
+        carouselInterval = setInterval(moveSlide, 3500);
     }
-    if (slides[counter].id === 'firstClone' || counter === slides.length - 1) {
-        wrapper.classList.remove('smooth-transition');
-        counter = 1;
-        wrapper.style.transform = `translateX(${-size * counter}%)`;
+}
+
+function resetCarouselTimer() {
+    if (carouselInterval) clearInterval(carouselInterval);
+    if (carouselSlides.length > 1) {
+        carouselInterval = setInterval(moveSlide, 3500);
+    }
+}
+
+if (wrapper) {
+    wrapper.addEventListener('transitionend', () => {
+        const total = carouselSlides.length;
+        if (total === 0) { isTransitioning = false; return; }
+        if (carouselCounter >= total + 1) {
+            wrapper.style.transition = 'none';
+            carouselCounter = 1;
+            wrapper.style.transform = `translateX(-${carouselCounter * 100}%)`;
+        }
+        if (carouselCounter <= 0) {
+            wrapper.style.transition = 'none';
+            carouselCounter = total;
+            wrapper.style.transform = `translateX(-${carouselCounter * 100}%)`;
+        }
+        updateDots();
+        isTransitioning = false;
+    });
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        clearInterval(carouselInterval);
+    } else {
+        isTransitioning = false;
+        startCarousel();
     }
 });
 
-setInterval(moveSlide, 3000);
+// Load slides from Supabase; fallback to hardcoded if table is empty
+async function loadBulletinSlides() {
+    const { data, error } = await client
+        .from('bulletin_slides')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+    const fallback = [
+        { id: 'f1', image_url: 'images/Mosa.png',   title: 'Requirements Updated',  subtitle: 'Check the 2026 criteria.' },
+        { id: 'f2', image_url: 'images/Hiyuki.png', title: 'Welcome to PESO Digos', subtitle: 'Official Scholarship Portal' },
+        { id: 'f3', image_url: 'images/Fadia.png',  title: "Mayor's Scholarship",   subtitle: 'Applications are now open.' },
+    ];
+
+    const slides = (!error && data && data.length > 0) ? data : fallback;
+    buildCarousel(slides);
+}
+
+// ================================================================
+// BULLETIN EDITOR MODAL
+// ================================================================
+
+function openBulletinEditor() {
+    document.getElementById('bulletinEditorModal')?.classList.add('open');
+    loadBulletinSlidesList();
+}
+
+function closeBulletinEditor(e) {
+    if (e && e.target !== document.getElementById('bulletinEditorModal')) return;
+    document.getElementById('bulletinEditorModal')?.classList.remove('open');
+}
+
+async function loadBulletinSlidesList() {
+    const list = document.getElementById('bulletinSlidesList');
+    if (!list) return;
+    list.innerHTML = `<p style="color:#94a3b8;font-size:0.8rem;text-align:center;padding:1rem 0;">Loading...</p>`;
+
+    const { data, error } = await client
+        .from('bulletin_slides')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+    if (error || !data || data.length === 0) {
+        list.innerHTML = `<p style="color:#94a3b8;font-size:0.8rem;text-align:center;padding:1.5rem 0;">No slides yet. Add one above!</p>`;
+        return;
+    }
+
+    list.innerHTML = data.map((s) => `
+        <div class="bulletin-slide-item" id="slide-item-${s.id}">
+            <img src="${s.image_url}" class="bulletin-slide-thumb" onerror="this.src='images/digos_logo.png'">
+            <div class="bulletin-slide-info">
+                <input class="bulletin-inline-input" value="${escHtml(s.title)}"
+                       onchange="updateSlideField('${s.id}', 'title', this.value)"
+                       placeholder="Title">
+                <input class="bulletin-inline-input" value="${escHtml(s.subtitle)}"
+                       onchange="updateSlideField('${s.id}', 'subtitle', this.value)"
+                       placeholder="Subtitle" style="font-size:0.72rem;color:#94a3b8;">
+                <div style="display:flex;align-items:center;gap:0.4rem;margin-top:4px;">
+                    <label class="bulletin-reimg-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             style="width:12px;height:12px;">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                        Change Image
+                        <input type="file" accept="image/*" style="display:none;"
+                               onchange="replaceSlideImage('${s.id}', this)">
+                    </label>
+                    <span style="color:#94a3b8;font-size:0.65rem;">Order: ${s.sort_order}</span>
+                </div>
+            </div>
+            <div class="bulletin-slide-actions">
+                <button class="bulletin-order-btn" onclick="moveSlideOrder('${s.id}', -1)" title="Move up">↑</button>
+                <button class="bulletin-order-btn" onclick="moveSlideOrder('${s.id}', 1)" title="Move down">↓</button>
+                <button class="bulletin-delete-btn" onclick="deleteBulletinSlide('${s.id}')" title="Delete">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                         style="width:14px;height:14px;">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14H6L5 6"/>
+                        <path d="M10 11v6M14 11v6"/>
+                        <path d="M9 6V4h6v2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function previewNewSlideImg() {
+    const file = document.getElementById('bulletinNewImg').files[0];
+    const preview = document.getElementById('bulletinNewImgPreview');
+    const labelText = document.getElementById('bulletinImgLabelText');
+    if (!file) return;
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    labelText.textContent = file.name.length > 20 ? file.name.slice(0, 18) + '…' : file.name;
+}
+
+async function addBulletinSlide() {
+    const fileInput = document.getElementById('bulletinNewImg');
+    const title     = document.getElementById('bulletinNewTitle').value.trim();
+    const subtitle  = document.getElementById('bulletinNewSubtitle').value.trim();
+    const file      = fileInput.files[0];
+    const addBtn    = document.querySelector('.bulletin-add-btn');
+
+    if (!file) { alert('Please choose an image.'); return; }
+
+    addBtn.disabled = true;
+    addBtn.textContent = 'Uploading…';
+
+    const fileName = `bulletin-slides/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+    const { error: upErr } = await client.storage.from('post-images').upload(fileName, file);
+    if (upErr) {
+        alert('Upload failed: ' + upErr.message);
+        addBtn.disabled = false;
+        addBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Slide`;
+        return;
+    }
+
+    const imageUrl = client.storage.from('post-images').getPublicUrl(fileName).data.publicUrl;
+
+    const { data: existing } = await client
+        .from('bulletin_slides')
+        .select('sort_order')
+        .order('sort_order', { ascending: false })
+        .limit(1);
+
+    const nextOrder = (existing && existing.length > 0) ? (existing[0].sort_order + 1) : 0;
+
+    const { error: insErr } = await client.from('bulletin_slides').insert([{
+        image_url: imageUrl, title, subtitle, sort_order: nextOrder
+    }]);
+
+    addBtn.disabled = false;
+    addBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Slide`;
+
+    if (insErr) { alert('Insert failed: ' + insErr.message); return; }
+
+    // Reset form
+    fileInput.value = '';
+    document.getElementById('bulletinNewImgPreview').style.display = 'none';
+    document.getElementById('bulletinImgLabelText').textContent = 'Choose Image';
+    document.getElementById('bulletinNewTitle').value = '';
+    document.getElementById('bulletinNewSubtitle').value = '';
+
+    loadBulletinSlidesList();
+    loadBulletinSlides();
+}
+
+async function updateSlideField(id, field, value) {
+    const { error } = await client.from('bulletin_slides').update({ [field]: value }).eq('id', id);
+    if (error) { alert('Update failed: ' + error.message); return; }
+    loadBulletinSlides();
+}
+
+async function replaceSlideImage(id, input) {
+    const file = input.files[0];
+    if (!file) return;
+    const fileName = `bulletin-slides/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+    const { error: upErr } = await client.storage.from('post-images').upload(fileName, file);
+    if (upErr) { alert('Upload failed: ' + upErr.message); return; }
+    const imageUrl = client.storage.from('post-images').getPublicUrl(fileName).data.publicUrl;
+    await updateSlideField(id, 'image_url', imageUrl);
+    loadBulletinSlidesList();
+}
+
+async function deleteBulletinSlide(id) {
+    if (!confirm('Delete this slide?')) return;
+    const { error } = await client.from('bulletin_slides').delete().eq('id', id);
+    if (error) { alert('Delete failed: ' + error.message); return; }
+    loadBulletinSlidesList();
+    loadBulletinSlides();
+}
+
+async function moveSlideOrder(id, dir) {
+    const { data: all } = await client
+        .from('bulletin_slides')
+        .select('id, sort_order')
+        .order('sort_order', { ascending: true });
+    if (!all) return;
+    const idx = all.findIndex(s => s.id === id);
+    const swapIdx = idx + dir;
+    if (swapIdx < 0 || swapIdx >= all.length) return;
+    const a = all[idx], b = all[swapIdx];
+    await client.from('bulletin_slides').update({ sort_order: b.sort_order }).eq('id', a.id);
+    await client.from('bulletin_slides').update({ sort_order: a.sort_order }).eq('id', b.id);
+    loadBulletinSlidesList();
+    loadBulletinSlides();
+}
 
 // ================================
 // MEDIA HELPERS
 // ================================
 
-// Detects if a URL is a video based on extension
 function isVideoUrl(url) {
     return /\.(mp4|webm|mov|ogg|avi|mkv)(\?|$)/i.test(url);
 }
 
-// Renders media items (images + videos) for a post
-// Returns HTML string. forFeed=true uses click-to-expand on images.
 function renderPostMedia(imageUrl, forFeed = false) {
     if (!imageUrl) return '';
 
-    // Parse — support both old single-string and new JSON array format
     let items = [];
     try {
         items = JSON.parse(imageUrl);
@@ -150,7 +431,6 @@ function renderPostMedia(imageUrl, forFeed = false) {
 
     if (items.length === 0) return '';
 
-    // Single item — full width
     if (items.length === 1) {
         const url = items[0];
         if (isVideoUrl(url)) {
@@ -171,7 +451,6 @@ function renderPostMedia(imageUrl, forFeed = false) {
         }
     }
 
-    // Multiple items — grid layout
     const gridClass = items.length === 2 ? 'post-media-grid-2' :
                       items.length === 3 ? 'post-media-grid-3' : 'post-media-grid-4';
 
@@ -202,7 +481,6 @@ function renderPostMedia(imageUrl, forFeed = false) {
     return `<div class="post-media-grid ${gridClass}">${itemsHtml}</div>`;
 }
 
-// Captures first frame of video into canvas for thumbnail
 function captureVideoThumbnail(videoId) {
     const video  = document.getElementById(videoId);
     const canvas = document.getElementById(videoId + '_canvas');
@@ -224,14 +502,12 @@ function captureVideoThumbnail(videoId) {
     video.load();
 }
 
-// Shows the video player when user taps the thumbnail
 function playVideo(videoId) {
     const video  = document.getElementById(videoId);
     const canvas = document.getElementById(videoId + '_canvas');
     const wrap   = video?.closest('.post-video-wrap');
     if (!video) return;
 
-    // Hide canvas + play button, show video
     if (canvas) canvas.style.display = 'none';
     if (wrap) {
         const playBtn = wrap.querySelector('.post-video-play-btn');
@@ -257,12 +533,12 @@ async function loadHomeAnnouncements() {
     data.forEach(post => {
         homeFeed.innerHTML += `
             <div class="bg-white p-4 rounded-xl border shadow-sm flex flex-col h-full">
-                <p class="text-sm text-slate-700 line-clamp-3 mb-3 flex-grow">${post.content}</p>
+                <p class="text-sm text-slate-700 line-clamp-3 mb-3 flex-grow">${linkifyText(post.content)}</p>
                 ${post.image_url ? renderPostMedia(post.image_url, false) : ''}
                 <button onclick="showTab('announcements-page')" class="text-sm text-blue-600 font-bold mt-4 text-left py-2 border-t border-slate-100 w-full">Read More →</button>
             </div>`;
 
-            setTimeout(() => {
+        setTimeout(() => {
             document.querySelectorAll('[id^="vid_"]').forEach(el => {
                 if (el.tagName === 'VIDEO') captureVideoThumbnail(el.id);
             });
@@ -279,7 +555,6 @@ async function loadPosts() {
     feed.innerHTML = "";
     data.forEach(post => {
         feed.innerHTML += `
-            
             <div class="fb-post">
                 <div class="flex items-center mb-3" style="position:relative;">
                     <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3 flex-shrink-0">P</div>
@@ -287,7 +562,6 @@ async function loadPosts() {
                         <div class="font-bold text-sm">PESO Digos Official</div>
                         <div class="text-[11px] text-gray-500">Just now</div>
                     </div>
-                    <!-- 3-dot menu -->
                     <div class="post-menu-wrap" style="margin-left:auto;">
                         <button class="post-menu-btn" onclick="togglePostMenu('menu_${post.id}', event)" title="More options">
                             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
@@ -309,11 +583,11 @@ async function loadPosts() {
                         </div>
                     </div>
                 </div>
-                <p class="text-[15px] mb-3 text-slate-800">${post.content}</p>
+                <p class="text-[15px] mb-3 text-slate-800" style="white-space:pre-wrap;">${linkifyText(post.content)}</p>
                 ${renderPostMedia(post.image_url, true)}
             </div>`;
 
-            setTimeout(() => {
+        setTimeout(() => {
             document.querySelectorAll('[id^="vid_"]').forEach(el => {
                 if (el.tagName === 'VIDEO') captureVideoThumbnail(el.id);
             });
@@ -321,29 +595,36 @@ async function loadPosts() {
     });
 }
 
-/*DeletePost and TogglePostMenu*/
+function linkifyText(text) {
+    if (!text) return '';
+    const escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    return escaped.replace(
+        /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer" class="post-link">$1</a>'
+    );
+}
 
 function togglePostMenu(menuId, e) {
     e.stopPropagation();
-    // Close all other open menus first
     document.querySelectorAll('.post-menu-dropdown.open').forEach(m => {
         if (m.id !== menuId) m.classList.remove('open');
     });
     document.getElementById(menuId)?.classList.toggle('open');
 }
 
-// Close any open menu when clicking anywhere else
 document.addEventListener('click', () => {
     document.querySelectorAll('.post-menu-dropdown.open')
         .forEach(m => m.classList.remove('open'));
 });
 
 async function deletePost(postId, menuId) {
-    // Close the menu first
     document.getElementById(menuId)?.classList.remove('open');
-
     if (!confirm("Delete this post? This cannot be undone.")) return;
-
     const { error } = await client.from("posts").delete().eq("id", postId);
     if (error) {
         alert("Delete failed: " + error.message);
@@ -367,7 +648,6 @@ async function createPost() {
         return;
     }
 
-    // Show posting indicator on button
     const postBtn = document.querySelector('button[onclick="createPost()"]');
     const originalText = postBtn.innerHTML;
     postBtn.disabled = true;
@@ -379,7 +659,6 @@ async function createPost() {
         Posting...
     `;
 
-    // Upload all files and collect URLs
     let mediaUrls = [];
     if (files.length > 0) {
         for (const file of files) {
@@ -400,7 +679,6 @@ async function createPost() {
         }
     }
 
-    // Store URLs as JSON array string (backwards compatible with old single-string posts)
     const mediaValue = mediaUrls.length > 0 ? JSON.stringify(mediaUrls) : null;
 
     const { error: insertError } = await client.from("posts").insert([{
@@ -423,7 +701,6 @@ async function createPost() {
     }
 }
 
-// Live preview of selected files before posting
 function updateMediaPreview() {
     const fileInput = document.getElementById("mediaInput");
     const preview   = document.getElementById("mediaPreview");
@@ -438,7 +715,7 @@ function updateMediaPreview() {
     }
 
     preview.style.display = "flex";
-    Array.from(files).forEach((file, i) => {
+    Array.from(files).forEach((file) => {
         const url  = URL.createObjectURL(file);
         const isVid = file.type.startsWith("video/");
         const cell = document.createElement("div");
@@ -450,7 +727,6 @@ function updateMediaPreview() {
         preview.appendChild(cell);
     });
 
-    // Show count badge
     if (files.length > 1) {
         const badge = document.createElement("span");
         badge.className = "media-count-badge";
@@ -530,6 +806,7 @@ window.onload = () => {
 
     loadSavedPreferences();
     loadProfile();
+    loadBulletinSlides();
     loadHomeAnnouncements();
     loadPosts();
 };
